@@ -1,9 +1,10 @@
-import "./global.css"
+import "../global.css"
 import {SafeAreaView} from "react-native-safe-area-context";
 import {FlatList, Image, Pressable, StatusBar, Text, TouchableOpacity, View} from "react-native";
 import {images, offers} from "@/constants";
 import {Fragment} from "react";
 import cn from "clsx"
+import CartButton from "@/Components/CartButton";
 
 export default function Index() {
     return (
@@ -53,7 +54,7 @@ export default function Index() {
                             <Text className="small-bold text-primary">
                                 DELIVER TO:
                             </Text>
-                            <TouchableOpacity className="flex-center flex-row gap-x-1 mt-0.5">
+                            <TouchableOpacity className="flex-center flex-row gap-x-3 mt-0.5">
                                 <Text className="paragraph-bold text-dark-100">
                                     Harishanth
                                 </Text>
@@ -61,9 +62,7 @@ export default function Index() {
                             </TouchableOpacity>
                         </View>
 
-                        <Text>
-                            Cart
-                        </Text>
+                        <CartButton/>
                     </View>
                 )}
             />
