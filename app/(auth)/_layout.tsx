@@ -2,6 +2,8 @@ import {KeyboardAvoidingView, Platform, ScrollView, View, Dimensions, ImageBackg
 import React from 'react'
 import {Slot} from "expo-router";
 import {images} from "@/constants";
+import CustomInput from "@/Components/CustomInput";
+import CustomButton from "@/Components/CustomButton";
 
 export default function _Layout() {
     return (
@@ -12,6 +14,14 @@ export default function _Layout() {
                     <Image source={images.logo} className="absolute -bottom-16 z-10 self-center size-48"/>
                 </View>
 
+                <CustomInput
+                    placeholder="Enter your Email"
+                    value={''}
+                    onChangeText={(text) => {}}
+                    label="Email"
+                    keyboardType="email-address"
+                />
+                <CustomButton/>
             </ScrollView>
             <Slot/>
         </KeyboardAvoidingView>
