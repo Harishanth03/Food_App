@@ -63,7 +63,7 @@ const SignIn = () => {
             <View className="flex flex-row justify-center mt-1 gap-2">
                 <Text className="base-regular text-gray-100">Don't you have an account?</Text>
                 <Link href="/sign-up" className="base-bold text-primary">
-                    Sign U
+                    Sign UP
                 </Link>
             </View>
         </View>
