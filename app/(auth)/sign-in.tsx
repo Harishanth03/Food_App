@@ -3,6 +3,8 @@ import React, {useState} from 'react'
 import CustomInput from "@/Components/CustomInput";
 import CustomButton from "@/Components/CustomButton";
 import {Link, router} from "expo-router";
+import {signIn} from "@/lib/appwrite";
+import * as Sentry from "@sentry/react";
 
 const SignIn = () => {
 
@@ -12,7 +14,9 @@ const SignIn = () => {
         password: "",
     });
     const submit = async () => {
-        if (!form.email || !form.password) {
+
+        const {email, password} = form;
+        if (!email || !password) {
             Alert.alert('Error', 'Please enter an valid email or password');
             return;
         }
@@ -21,12 +25,13 @@ const SignIn = () => {
         setIsSubmitting(true)
 
         try {
-            // Call appwrite sign in function
+            await signIn({email, password});
 
             Alert.alert('Success', 'Sign in Successfully');
             router.replace('/');
         }catch (error: any){
             Alert.alert('Error', error.message)
+            Sentry.captureEvent(error)
         }finally {
             setIsSubmitting(false)
         }
@@ -58,7 +63,7 @@ const SignIn = () => {
             <View className="flex flex-row justify-center mt-1 gap-2">
                 <Text className="base-regular text-gray-100">Don't you have an account?</Text>
                 <Link href="/sign-up" className="base-bold text-primary">
-                    Sign Up
+                    Sign U
                 </Link>
             </View>
         </View>

@@ -1,6 +1,7 @@
-import {Account, Avatars, Client, Databases, ID} from "react-native-appwrite";
+import {Account, Avatars, Client, Databases, ID, Query} from "react-native-appwrite";
 import {CreateUserParams, SignInParams} from "@/type";
 import {id} from "postcss-selector-parser";
+import {error} from "@expo/fingerprint/cli/build/utils/log";
 
 export const appwriteConfig = {
     endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
@@ -18,7 +19,7 @@ client
     .setPlatform(appwriteConfig.platform)
 
 export const account = new Account(client);
-export const database = new Databases(client)
+export const databases = new Databases(client)
 export const avatar = new Avatars(client)
 
 export const createUser = async ({email,password,name}: CreateUserParams) => {
@@ -31,7 +32,7 @@ export const createUser = async ({email,password,name}: CreateUserParams) => {
 
         const avartarUrl = avatar.getInitialsURL(name)
 
-        return await database.createDocument(
+        return await databases.createDocument(
             appwriteConfig.databaseId,
             appwriteConfig.userCollectionId,
             ID.unique(),
@@ -57,4 +58,26 @@ export const signIn = async ({email, password} : SignInParams) => {
         throw new Error(error as string)
     }
 
+}
+
+//==================================== get current user ============================================
+export const getCurrentUser = async () => {
+    try {
+        const currentAccount = await account.get();
+        if(!currentAccount) throw Error;
+
+        const currentUser = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.userCollectionId,
+            [Query.equal('accountId', currentAccount.$id)]
+        )
+
+        if(!currentAccount) throw Error;
+
+        return currentUser.documents[0];
+    }
+    catch (error) {
+        console.log(error);
+        throw new Error(error as string);
+    }
 }
