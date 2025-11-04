@@ -1,10 +1,10 @@
-import {View, Text, Alert} from 'react-native'
-import React, {useState} from 'react'
-import CustomInput from "@/Components/CustomInput";
 import CustomButton from "@/Components/CustomButton";
-import {Link, router} from "expo-router";
-import {signIn} from "@/lib/appwrite";
+import CustomInput from "@/Components/CustomInput";
+import { signIn } from "@/lib/appwrite";
 import * as Sentry from "@sentry/react";
+import { Link, router } from "expo-router";
+import React, { useState } from 'react';
+import { Alert, Text, View } from 'react-native';
 
 const SignIn = () => {
 
@@ -13,19 +13,48 @@ const SignIn = () => {
         email: "",
         password: "",
     });
+    const [errors, setErrors] = useState<{email?: string; password?: string}>({});
+
+    const validateEmail = (email: string) => {
+        const re = /^\S+@\S+\.\S+$/;
+        return re.test(email.trim());
+    }
+
+    const validatePassword = (password: string) => {
+        return password.trim().length >= 6;
+    }
     const submit = async () => {
 
         const {email, password} = form;
-        if (!email || !password) {
-            Alert.alert('Error', 'Please enter an valid email or password');
-            return;
+
+        // Trim email for validation
+        const trimmedEmail = email.trim();
+        const trimmedPassword = password;
+
+        // Validate fields and set inline errors
+        const newErrors: {email?: string; password?: string} = {};
+        if (!trimmedEmail) {
+            newErrors.email = 'Email is required';
+        } else if (!validateEmail(trimmedEmail)) {
+            newErrors.email = 'Please enter a valid email';
         }
 
+        if (!trimmedPassword) {
+            newErrors.password = 'Password is required';
+        } else if (!validatePassword(trimmedPassword)) {
+            newErrors.password = 'Password must be at least 6 characters';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            Alert.alert('Invalid input', 'Please fix the errors and try again');
+            return;
+        }
 
         setIsSubmitting(true)
 
         try {
-            await signIn({email, password});
+            await signIn({email: trimmedEmail, password: trimmedPassword});
 
             Alert.alert('Success', 'Sign in Successfully');
             router.replace('/');
@@ -41,27 +70,59 @@ const SignIn = () => {
             <CustomInput
                 placeholder="Enter your Email"
                 value={form.email}
-                onChangeText={(text) => setForm((prev) => ({...prev, email: text}))}
+                onChangeText={(text) => {
+                    setForm((prev) => ({...prev, email: text}));
+                    // clear email error as user types
+                    setErrors((prev) => ({...prev, email: undefined}));
+                }}
                 label="Email"
                 keyboardType="email-address"
             />
 
+            {errors.email ? (
+                <Text className="text-red-500 text-xs mt-1">{errors.email}</Text>
+            ) : null}
+
             <CustomInput
                 placeholder="Enter your Password"
                 value={form.password}
-                onChangeText={(text) => setForm((prev) => ({...prev, password: text}))}
+                onChangeText={(text) => {
+                    setForm((prev) => ({...prev, password: text}));
+                    // clear password error as user types
+                    setErrors((prev) => ({...prev, password: undefined}));
+                }}
                 label="Password"
                 secureTextEntry={true}
             />
+
+            {errors.password ? (
+                <Text className="text-red-500 text-xs mt-1">{errors.password}</Text>
+            ) : null}
             <CustomButton
                 title="Sign In"
                 isLoading={isSubmitting}
-                onPress={submit}
+                onPress={() => {
+                    // prevent submission while loading or when form invalid
+                    if (isSubmitting) return;
+                    // quick client-side check before submit
+                    if (!validateEmail(form.email) || !validatePassword(form.password)) {
+                        // set errors if not already set
+                        const quickErrs: {email?: string; password?: string} = {};
+                        if (!validateEmail(form.email)) quickErrs.email = 'Please enter a valid email';
+                        if (!validatePassword(form.password)) quickErrs.password = 'Password must be at least 6 characters';
+                        setErrors((prev) => ({...prev, ...quickErrs}));
+                        Alert.alert('Invalid input', 'Please fix the errors and try again');
+                        return;
+                    }
+
+                    submit();
+                }}
+                style={isSubmitting || !validateEmail(form.email) || !validatePassword(form.password) ? 'opacity-50' : ''}
                 
             />
 
             <View className="flex flex-row justify-center mt-1 gap-2">
-                <Text className="base-regular text-gray-100">Don't you have an account?</Text>
+                <Text className="base-regular text-gray-100">Don&apos;t you have an account?</Text>
                 <Link href="/sign-up" className="base-bold text-primary">
                     Sign UP
                 </Link>
